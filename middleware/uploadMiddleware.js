@@ -32,7 +32,6 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
-// ✅ Use fields for multiple named inputs
 export const uploadProfileMediaMiddleware = upload.fields([
   { name: 'profilePhoto', maxCount: 1 },
   { name: 'photos', maxCount: 10 }

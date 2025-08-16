@@ -53,7 +53,6 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Add index for better performance on frequently queried fields
 // UserSchema.index({ email: 1 });
 UserSchema.index({ verificationToken: 1 });
 UserSchema.index({ resetPasswordToken: 1 });

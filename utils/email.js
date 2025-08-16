@@ -1,12 +1,10 @@
 import nodemailer from 'nodemailer';
 
-// Email sending utility
 export const sendNotification = (to, subject, text) => {
   console.log(`Sending email to ${to}: ${subject} - ${text}`);
   // Actual implementation would use Nodemailer or similar
   return true;
 };
-
 // Send verification email
 export const sendVerificationEmail = async (email, token) => {
   const transporter = nodemailer.createTransport({

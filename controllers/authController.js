@@ -4,12 +4,10 @@ import bcrypt from 'bcryptjs';
 import authConfig from '../config/auth.js';
 import { sendVerificationEmail } from '../utils/email.js';
 
-// Register new user
 export const register = async (req, res) => {
   const { username, email, password, contact } = req.body;
   
   try {
-    // Validate input
     if (!username || !email || !password || !contact) {
       return res.status(400).json({ 
         success: false,
@@ -23,10 +21,8 @@ export const register = async (req, res) => {
       });
     }
 
-    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      // Case 1: User is already verified
       if (existingUser.isVerified) {
         return res.status(409).json({ 
           success: false,
@@ -35,12 +31,9 @@ export const register = async (req, res) => {
         });
       }
       
-      // Case 2: Verification token expired
       if (existingUser.verificationExpires < Date.now()) {
-        // Allow re-registration by deleting the old unverified record
         await User.deleteOne({ _id: existingUser._id });
       } 
-      // Case 3: Verification still pending and not expired
       else {
         return res.status(409).json({ 
           success: false,
@@ -51,7 +44,6 @@ export const register = async (req, res) => {
       }
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -138,37 +130,31 @@ export const register = async (req, res) => {
   }
 };
 
-// Authenticate user
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Find user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if email is verified
     if (!user.isVerified) {
       return res.status(403).json({ 
         error: 'Account not verified. Please check your email.',
         requiresVerification: true
       });
     }
-
-    // Generate JWT token
+    
     const token = jwt.sign(
       { 
         _id: user._id,
@@ -179,7 +165,6 @@ export const login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
 
-    // Set secure HTTP-only cookie
     res.cookie('verificationToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

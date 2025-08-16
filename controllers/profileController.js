@@ -6,7 +6,7 @@ import { promisify } from 'util';
 const unlinkAsync = promisify(fs.unlink);
 // Create new profile
 export const createProfile = async (req, res) => {
-  console.log("Creating Profile...");
+  // console.log("Creating Profile...");
 
   const { gender, profileFor, publicDetails, privateDetails } = req.body;
 
@@ -14,11 +14,9 @@ export const createProfile = async (req, res) => {
     let profilePhotoUrl = '';
     const photosUrls = [];
 
-    // ✅ Access files correctly
     const profilePhotoFile = req.files?.profilePhoto?.[0];
     const privatePhotosFiles = req.files?.photos || [];
 
-    // ✅ Upload profile photo if provided
     if (profilePhotoFile) {
       try {
         const result = await cloudinary.uploader.upload(profilePhotoFile.path, {
@@ -27,7 +25,7 @@ export const createProfile = async (req, res) => {
           unique_filename: false
         });
         profilePhotoUrl = result.secure_url;
-        await unlinkAsync(profilePhotoFile.path); // cleanup
+        await unlinkAsync(profilePhotoFile.path);
       } catch (uploadErr) {
         console.error('Cloudinary profile photo upload error:', uploadErr);
         await unlinkAsync(profilePhotoFile.path);
@@ -38,7 +36,6 @@ export const createProfile = async (req, res) => {
       }
     }
 
-    // ✅ Upload private photos if provided
     for (const file of privatePhotosFiles) {
       try {
         const result = await cloudinary.uploader.upload(file.path, {
@@ -58,7 +55,6 @@ export const createProfile = async (req, res) => {
       }
     }
 
-    // ✅ Create profile
     const profile = new Profile({
       user: req.user.id,
       gender,

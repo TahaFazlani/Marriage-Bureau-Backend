@@ -14,7 +14,6 @@ import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 
-// Connect to database
 connectDB();
 
 // Middleware
@@ -31,6 +30,7 @@ app.use('/api/match', matchRoutes);
 app.use('/api/marriage', marriageRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stories', storyRoutes);
+
 // Error handler
 app.use(errorHandler);
 
