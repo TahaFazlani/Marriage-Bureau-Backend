@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Profile from '../models/Profile.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import authConfig from '../config/auth.js';
@@ -179,6 +180,7 @@ export const login = async (req, res) => {
     delete userResponse.password;
     delete userResponse.verificationToken;
     
+    console.log("REsponse: ", token)
     res.json({ 
       token, 
       user: userResponse
@@ -345,5 +347,46 @@ export const resetPassword = async (req, res) => {
     }
     console.error('Reset password error:', err.message);
     res.status(500).json({ error: 'Server error during password reset' });
+  }
+};
+
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    // Find user by ID from the authenticated request (set by auth middleware)
+    const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Find user's profiles
+    const profiles = await Profile.find({ user: req.user.id });
+
+    // Prepare user data to send
+    const userData = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+      profiles: profiles
+    };
+
+    res.json({
+      success: true,
+      user: userData
+    });
+
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error'
+    });
   }
 };
